@@ -43,6 +43,24 @@ const formatName = (name: string): string => {
     .join(' ');
 };
 
+// Function to format addresses while preserving numbers
+const formatAddress = (address: string): string => {
+  if (!address) return address;
+
+  // Split the address by spaces
+  return address
+    .split(' ')
+    .map(part => {
+      // If the part is only numbers, preserve it as is
+      if (/^\d+$/.test(part)) {
+        return part;
+      }
+      // Otherwise capitalize the first letter and lowercase the rest
+      return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+    })
+    .join(' ');
+};
+
 const formSchema = z.object({
   documentType: z.enum(["quote", "invoice"]),
   quoteNumber: z.string().min(1, { message: "Document number is required" }),
@@ -223,29 +241,67 @@ export function QuoteForm() {
               <FormField
                 control={form.control}
                 name="customerAddress1"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Address Line 1</FormLabel>
-                    <FormControl>
-                      <Input placeholder="123 Main St" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    field.onChange(e.target.value);
+                  };
+
+                  const handleAddressBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+                    if (e.target.value) {
+                      const formattedValue = formatAddress(e.target.value);
+                      field.onChange(formattedValue);
+                    }
+                  };
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Address Line 1</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="123 Main St"
+                          value={field.value || ""}
+                          onChange={handleAddressChange}
+                          onBlur={handleAddressBlur}
+                          autoCapitalize="words"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <FormField
                 control={form.control}
                 name="customerAddress2"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Address Line 2</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Liverpool" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    field.onChange(e.target.value);
+                  };
+
+                  const handleAddressBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+                    if (e.target.value) {
+                      const formattedValue = formatAddress(e.target.value);
+                      field.onChange(formattedValue);
+                    }
+                  };
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Address Line 2</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Liverpool"
+                          value={field.value || ""}
+                          onChange={handleAddressChange}
+                          onBlur={handleAddressBlur}
+                          autoCapitalize="words"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <FormField
