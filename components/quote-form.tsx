@@ -61,12 +61,6 @@ const formatAddress = (address: string): string => {
     .join(' ');
 };
 
-// Define a service item type
-interface ServiceItem {
-  description: string;
-  amount: string;
-}
-
 const formSchema = z.object({
   documentType: z.enum(["quote", "invoice"]),
   quoteNumber: z.string().min(1, { message: "Document number is required" }),
@@ -75,12 +69,8 @@ const formSchema = z.object({
   customerAddress1: z.string().min(1, { message: "Address line 1 is required" }),
   customerAddress2: z.string().optional(),
   customerPostcode: z.string().min(1, { message: "Postcode is required" }),
-  serviceItems: z.array(
-    z.object({
-      description: z.string().min(1, { message: "Description is required" }),
-      amount: z.string().min(1, { message: "Amount is required" })
-    })
-  ).min(1, { message: "At least one service item is required" }),
+  description: z.string().min(1, { message: "Description is required" }),
+  amount: z.string().min(1, { message: "Amount is required" }),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -97,9 +87,8 @@ export function QuoteForm() {
     customerAddress1: "",
     customerAddress2: "",
     customerPostcode: "",
-    serviceItems: [
-      { description: "", amount: "" }
-    ],
+    description: "",
+    amount: "",
   }
 
   const form = useForm<FormValues>({
@@ -119,29 +108,6 @@ export function QuoteForm() {
   const documentTypeLabel = isInvoice ? "Invoice" : "Quote";
   const documentNumberLabel = isInvoice ? "Invoice Number" : "Quote Number";
   const documentDateLabel = isInvoice ? "Invoice Date" : "Quote Date";
-
-  // Get the service items array from the form
-  const serviceItems = form.watch("serviceItems");
-
-  // Function to add a new service item
-  const addServiceItem = () => {
-    const currentItems = form.getValues("serviceItems");
-    form.setValue("serviceItems", [
-      ...currentItems,
-      { description: "", amount: "" }
-    ]);
-  };
-
-  // Function to remove a service item
-  const removeServiceItem = (index: number) => {
-    const currentItems = form.getValues("serviceItems");
-    if (currentItems.length > 1) {
-      form.setValue(
-        "serviceItems",
-        currentItems.filter((_, i) => i !== index)
-      );
-    }
-  };
 
   const onSubmit = async (data: FormValues) => {
     setIsGenerating(true)
@@ -164,7 +130,8 @@ export function QuoteForm() {
         companyContact: "07395128423",
         companyEmail: "contact@kmjoinery.co.uk",
         companyWebsite: "kmjoinery.co.uk",
-        serviceItems: data.serviceItems,
+        description: data.description,
+        amount: data.amount,
       });
 
       setPdfBlob(blob);
@@ -382,92 +349,46 @@ export function QuoteForm() {
 
               <FormField
                 control={form.control}
-                name="serviceItems"
+                name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex justify-between items-center">
-                      <FormLabel>Service Items</FormLabel>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={addServiceItem}
-                        className="text-xs h-8"
-                      >
-                        Add Item
-                      </Button>
-                    </div>
+                    <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <div className="space-y-4">
-                        {field.value.map((item, index) => (
-                          <div key={index} className="flex items-start space-x-4 p-3 border rounded-md bg-background">
-                            <div className="flex-1">
-                              <FormField
-                                control={form.control}
-                                name={`serviceItems.${index}.description`}
-                                render={({ field: itemField }) => (
-                                  <FormItem>
-                                    <FormLabel>Description</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        placeholder="Side double door repairs"
-                                        value={itemField.value}
-                                        onChange={(e) => itemField.onChange(e.target.value)}
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                            <div className="w-1/3">
-                              <FormField
-                                control={form.control}
-                                name={`serviceItems.${index}.amount`}
-                                render={({ field: amountField }) => (
-                                  <FormItem>
-                                    <FormLabel>Amount (£)</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        placeholder="150.00"
-                                        type="text"
-                                        inputMode="decimal"
-                                        pattern="[0-9]*\.?[0-9]*"
-                                        value={amountField.value}
-                                        onChange={(e) => {
-                                          // Only allow numbers and decimal point
-                                          const value = e.target.value.replace(/[^0-9.]/g, '');
-                                          amountField.onChange(value);
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                            {field.value.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="mt-8"
-                                onClick={() => removeServiceItem(index)}
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-destructive">
-                                  <path d="M3 6h18"></path>
-                                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                                </svg>
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
+                      <Textarea placeholder="Side double door repairs" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
+              />
+
+              <FormField
+                control={form.control}
+                name="amount"
+                render={({ field }) => {
+                  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    // Only allow numbers and decimal point
+                    const value = e.target.value.replace(/[^0-9.]/g, '');
+                    field.onChange(value);
+                  };
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Amount (£)</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="150.00"
+                          type="text"
+                          inputMode="decimal"
+                          pattern="[0-9]*\.?[0-9]*"
+                          value={field.value || ""}
+                          onChange={handleAmountChange}
+                          onBlur={field.onBlur}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <Button
