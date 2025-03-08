@@ -32,6 +32,17 @@ const formatPostcode = (postcode: string): string => {
   return cleanPostcode;
 };
 
+// Function to capitalize the first letter of each word in a name
+const formatName = (name: string): string => {
+  if (!name) return name;
+
+  // Split the name by spaces, capitalize each part, and join back
+  return name
+    .split(' ')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+};
+
 const formSchema = z.object({
   documentType: z.enum(["quote", "invoice"]),
   quoteNumber: z.string().min(1, { message: "Document number is required" }),
@@ -179,15 +190,34 @@ export function QuoteForm() {
               <FormField
                 control={form.control}
                 name="customerName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Customer Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    field.onChange(e.target.value);
+                  };
+
+                  const handleNameBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+                    if (e.target.value) {
+                      const formattedValue = formatName(e.target.value);
+                      field.onChange(formattedValue);
+                    }
+                  };
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Customer Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="John Doe"
+                          value={field.value || ""}
+                          onChange={handleNameChange}
+                          onBlur={handleNameBlur}
+                          autoCapitalize="words"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <FormField
