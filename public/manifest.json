@@ -2,11 +2,18 @@
   "name": "KM Joinery Quote Generator",
   "short_name": "KM Joinery",
   "description": "Generate professional quotes for KM Joinery",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
   "background_color": "#ffffff",
   "theme_color": "#000000",
   "orientation": "portrait-primary",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -55,6 +62,36 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/splash/apple-splash-1170-2532.png",
+      "sizes": "1170x2532",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "KM Joinery Quote Generator"
+    },
+    {
+      "src": "/splash/apple-splash-2532-1170.png",
+      "sizes": "2532x1170",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "KM Joinery Quote Generator"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Home",
+      "url": "/",
+      "description": "Go to the home page",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }
