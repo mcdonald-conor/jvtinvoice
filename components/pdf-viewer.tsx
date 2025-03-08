@@ -6,9 +6,10 @@ import { Download } from "lucide-react"
 
 interface PDFViewerProps {
   pdfBlob: Blob
+  documentType?: 'quote' | 'invoice'
 }
 
-export function PDFViewer({ pdfBlob }: PDFViewerProps) {
+export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string>("")
 
   useEffect(() => {
@@ -25,7 +26,8 @@ export function PDFViewer({ pdfBlob }: PDFViewerProps) {
   const handleDownload = () => {
     const link = document.createElement("a")
     link.href = pdfUrl
-    link.download = "KM-Joinery-Quote.pdf"
+    const documentTypeCapitalized = documentType.charAt(0).toUpperCase() + documentType.slice(1)
+    link.download = `KM-Joinery-${documentTypeCapitalized}.pdf`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -40,9 +42,14 @@ export function PDFViewer({ pdfBlob }: PDFViewerProps) {
         </Button>
       </div>
       <div className="flex-1 bg-white rounded-lg overflow-hidden border">
-        <iframe src={pdfUrl} className="w-full h-full" title="PDF Preview" />
+        {pdfUrl ? (
+          <iframe src={pdfUrl} className="w-full h-full" title="PDF Preview" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <p className="text-muted-foreground">Loading PDF preview...</p>
+          </div>
+        )}
       </div>
     </div>
   )
 }
-

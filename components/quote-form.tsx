@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -11,11 +11,31 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { PDFViewer } from "@/components/pdf-viewer"
-import { generateQuotePDF } from "@/lib/pdf-generator"
+import { generatePDF } from "@/lib/pdf-generator"
+import { Switch } from "@/components/ui/switch"
+
+// Function to format UK postcodes
+const formatPostcode = (postcode: string): string => {
+  if (!postcode) return postcode;
+
+  // Remove all spaces and convert to uppercase
+  const cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
+
+  // UK postcodes are generally in the format: AA9A 9AA or A9A 9AA or A9 9AA or A99 9AA or AA9 9AA
+  // We want to add a space before the last 3 characters
+  if (cleanPostcode.length > 3) {
+    const inwardCode = cleanPostcode.slice(-3); // Last 3 characters
+    const outwardCode = cleanPostcode.slice(0, -3); // Everything else
+    return `${outwardCode} ${inwardCode}`;
+  }
+
+  return cleanPostcode;
+};
 
 const formSchema = z.object({
-  quoteNumber: z.string().min(1, { message: "Quote number is required" }),
-  quoteDate: z.string().min(1, { message: "Quote date is required" }),
+  documentType: z.enum(["quote", "invoice"]),
+  quoteNumber: z.string().min(1, { message: "Document number is required" }),
+  quoteDate: z.string().min(1, { message: "Document date is required" }),
   customerName: z.string().min(1, { message: "Customer name is required" }),
   customerAddress1: z.string().min(1, { message: "Address line 1 is required" }),
   customerAddress2: z.string().optional(),
@@ -31,9 +51,15 @@ export function QuoteForm() {
   const [isGenerating, setIsGenerating] = useState(false)
 
   const defaultValues: Partial<FormValues> = {
+    documentType: "quote",
     quoteNumber: `KMJ-${Math.floor(100 + Math.random() * 900)}`,
     quoteDate: format(new Date(), "dd/MM/yy"),
+    customerName: "",
+    customerAddress1: "",
+    customerAddress2: "",
+    customerPostcode: "",
     description: "",
+    amount: "",
   }
 
   const form = useForm<FormValues>({
@@ -41,6 +67,18 @@ export function QuoteForm() {
     defaultValues,
     mode: "onChange",
   })
+
+  // Ensure form is initialized with default values
+  useEffect(() => {
+    form.reset(defaultValues);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const documentType = form.watch("documentType");
+  const isInvoice = documentType === "invoice";
+  const documentTypeLabel = isInvoice ? "Invoice" : "Quote";
+  const documentNumberLabel = isInvoice ? "Invoice Number" : "Quote Number";
+  const documentDateLabel = isInvoice ? "Invoice Date" : "Quote Date";
 
   const onSubmit = async (data: FormValues) => {
     setIsGenerating(true)
@@ -52,7 +90,8 @@ export function QuoteForm() {
         data.customerPostcode
       ];
 
-      const blob = await generateQuotePDF({
+      const blob = await generatePDF({
+        documentType: data.documentType,
         quoteNumber: data.quoteNumber,
         quoteDate: data.quoteDate,
         customerName: data.customerName,
@@ -86,13 +125,35 @@ export function QuoteForm() {
               }}
               className="space-y-6"
             >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">{documentTypeLabel} Generator</h2>
+                <FormField
+                  control={form.control}
+                  name="documentType"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-end space-x-2 space-y-0">
+                      <div className="text-sm font-medium">Quote</div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value === "invoice"}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked ? "invoice" : "quote");
+                          }}
+                        />
+                      </FormControl>
+                      <div className="text-sm font-medium">Invoice</div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="quoteNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Quote Number</FormLabel>
+                      <FormLabel>{documentNumberLabel}</FormLabel>
                       <FormControl>
                         <Input placeholder="KMJ-123" {...field} />
                       </FormControl>
@@ -105,7 +166,7 @@ export function QuoteForm() {
                   name="quoteDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Quote Date</FormLabel>
+                      <FormLabel>{documentDateLabel}</FormLabel>
                       <FormControl>
                         <Input placeholder="DD/MM/YY" {...field} />
                       </FormControl>
@@ -160,15 +221,44 @@ export function QuoteForm() {
               <FormField
                 control={form.control}
                 name="customerPostcode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Postcode</FormLabel>
-                    <FormControl>
-                      <Input placeholder="L31 8AL" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const handlePostcodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    field.onChange(e.target.value);
+                  };
+
+                  const handlePostcodeBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+                    if (e.target.value) {
+                      const formattedValue = formatPostcode(e.target.value);
+                      field.onChange(formattedValue);
+                    }
+                  };
+
+                  const handlePostcodeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+                    if (e.key === ' ' || e.key === 'Enter' || e.key === 'Tab') {
+                      if (e.key === ' ' && e.currentTarget.value) {
+                        e.preventDefault();
+                        const formattedValue = formatPostcode(e.currentTarget.value);
+                        field.onChange(formattedValue);
+                      }
+                    }
+                  };
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Postcode</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="L31 8AL"
+                          value={field.value || ""}
+                          onChange={handlePostcodeChange}
+                          onBlur={handlePostcodeBlur}
+                          onKeyDown={handlePostcodeKeyDown}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <FormField
@@ -188,15 +278,31 @@ export function QuoteForm() {
               <FormField
                 control={form.control}
                 name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Amount (£)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="150.00" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    // Only allow numbers and decimal point
+                    const value = e.target.value.replace(/[^0-9.]/g, '');
+                    field.onChange(value);
+                  };
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Amount (£)</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="150.00"
+                          type="text"
+                          inputMode="decimal"
+                          pattern="[0-9]*\.?[0-9]*"
+                          value={field.value || ""}
+                          onChange={handleAmountChange}
+                          onBlur={field.onBlur}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <Button
@@ -204,7 +310,7 @@ export function QuoteForm() {
                 className="w-full"
                 disabled={isGenerating || !form.formState.isValid}
               >
-                {isGenerating ? "Generating..." : "Generate Quote"}
+                {isGenerating ? "Generating..." : `Generate ${documentTypeLabel}`}
               </Button>
             </form>
           </Form>
@@ -213,11 +319,11 @@ export function QuoteForm() {
 
       <div>
         {pdfBlob ? (
-          <PDFViewer pdfBlob={pdfBlob} />
+          <PDFViewer pdfBlob={pdfBlob} documentType={form.getValues("documentType")} />
         ) : (
           <div className="flex items-center justify-center h-full bg-muted rounded-lg p-8">
             <p className="text-muted-foreground text-center">
-              Fill out the form and click "Generate Quote" to preview your PDF quote
+              Fill out the form and click "Generate {documentTypeLabel}" to preview your PDF {documentTypeLabel.toLowerCase()}
             </p>
           </div>
         )}

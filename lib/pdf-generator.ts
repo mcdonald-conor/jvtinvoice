@@ -1,6 +1,7 @@
 import jsPDF from "jspdf"
 
-interface QuoteData {
+interface DocumentData {
+  documentType: 'quote' | 'invoice'
   quoteNumber: string
   quoteDate: string
   customerName: string
@@ -14,13 +15,18 @@ interface QuoteData {
   amount: string
 }
 
-export async function generateQuotePDF(data: QuoteData): Promise<Blob> {
+export async function generatePDF(data: DocumentData): Promise<Blob> {
   // Create a new PDF document
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
     format: "a4",
   })
+
+  const isInvoice = data.documentType === 'invoice';
+  const documentTypeUpper = isInvoice ? "INVOICE" : "QUOTE";
+  const documentNumberLabel = isInvoice ? "INVOICE NUMBER" : "QUOTE NUMBER";
+  const documentDateLabel = isInvoice ? "INVOICE DATE" : "QUOTE DATE";
 
   // Set font
   doc.setFont("helvetica")
@@ -30,19 +36,19 @@ export async function generateQuotePDF(data: QuoteData): Promise<Blob> {
   doc.setFont("helvetica", "bold")
   doc.text(data.companyName, 20, 20)
 
-  // Add "QUOTE" heading
+  // Add document type heading
   doc.setFontSize(16)
-  doc.text("QUOTE", 20, 30)
+  doc.text(documentTypeUpper, 20, 30)
 
-  // Create a table for quote details
+  // Create a table for document details
   doc.setFontSize(10)
   doc.setFont("helvetica", "bold")
 
-  // Quote number and date headers
-  doc.text("QUOTE NUMBER", 20, 40)
-  doc.text("QUOTE DATE", 70, 40)
+  // Document number and date headers
+  doc.text(documentNumberLabel, 20, 40)
+  doc.text(documentDateLabel, 70, 40)
 
-  // Quote number and date values
+  // Document number and date values
   doc.setFont("helvetica", "normal")
   doc.text(data.quoteNumber, 20, 45)
   doc.text(data.quoteDate, 70, 45)
@@ -107,6 +113,24 @@ export async function generateQuotePDF(data: QuoteData): Promise<Blob> {
   doc.text("TOTAL", 130, 135)
   doc.text(`£${data.amount}`, 160, 135)
 
+  // Add payment terms for invoice
+  if (isInvoice) {
+    doc.setFont("helvetica", "bold")
+    doc.text("PAYMENT TERMS", 20, 150)
+    doc.setFont("helvetica", "normal")
+    doc.text("Payment due within 30 days of invoice date", 20, 155)
+
+    // Payment details
+    doc.setFont("helvetica", "bold")
+    doc.text("PAYMENT DETAILS", 20, 165)
+    doc.setFont("helvetica", "normal")
+    doc.text("Please make payment to:", 20, 170)
+    doc.text("Account Name: KM Joinery", 20, 175)
+    doc.text("Sort Code: 00-00-00", 20, 180)
+    doc.text("Account Number: 00000000", 20, 185)
+    doc.text("Reference: " + data.quoteNumber, 20, 190)
+  }
+
   // Footer
   const footerText = `${data.companyName}`
   const contactText = `Tel: ${data.companyContact} | ${data.companyEmail} | www.${data.companyWebsite}`
@@ -121,3 +145,7 @@ export async function generateQuotePDF(data: QuoteData): Promise<Blob> {
   return doc.output("blob")
 }
 
+// For backward compatibility
+export async function generateQuotePDF(data: Omit<DocumentData, 'documentType'>): Promise<Blob> {
+  return generatePDF({ ...data, documentType: 'quote' });
+}
