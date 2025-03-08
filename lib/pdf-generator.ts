@@ -1,5 +1,10 @@
 import jsPDF from "jspdf"
 
+interface ServiceItem {
+  description: string;
+  amount: string;
+}
+
 interface DocumentData {
   documentType: 'quote' | 'invoice'
   quoteNumber: string
@@ -11,8 +16,9 @@ interface DocumentData {
   companyContact: string
   companyEmail: string
   companyWebsite: string
-  description: string
-  amount: string
+  description?: string // Optional now since we can use serviceItems
+  amount?: string // Optional now since we can use serviceItems
+  serviceItems?: ServiceItem[] // New field for multiple service items
 }
 
 export async function generatePDF(data: DocumentData): Promise<Blob> {
@@ -101,13 +107,26 @@ export async function generatePDF(data: DocumentData): Promise<Blob> {
 
   // Description section with background
   // First, draw the background rectangle
+  const serviceItems = data.serviceItems || [];
+
+  // If no service items but we have a description and amount, create a service item from them
+  if (serviceItems.length === 0 && data.description && data.amount) {
+    serviceItems.push({
+      description: data.description,
+      amount: data.amount
+    });
+  }
+
+  // Calculate the height needed for all service items (10mm per item)
+  const serviceItemsHeight = Math.max(30, serviceItems.length * 10);
+
   doc.setFillColor(245, 247, 250) // Light gray background color
-  doc.rect(20, 90, 170, 30, 'F') // x, y, width, height, style ('F' = fill)
+  doc.rect(20, 90, 170, serviceItemsHeight, 'F') // x, y, width, height, style ('F' = fill)
 
   // Description and amount headers
   doc.setFont("helvetica", "bold")
   doc.setTextColor(92, 107, 115) // Gray-blue color
-  doc.text("DESCRIPTION", 25, 95)
+  doc.text("DESCRIPTION", 25, 95) // Increased padding from left edge
   doc.text("AMOUNT", 160, 95)
 
   // Line separator within the description box
@@ -117,48 +136,58 @@ export async function generatePDF(data: DocumentData): Promise<Blob> {
   // Description and amount values
   doc.setFont("helvetica", "normal")
   doc.setTextColor(0, 0, 0) // Black color for values
-  doc.text(data.description, 25, 105)
-  doc.text(`£${data.amount}`, 160, 105)
 
-  // Line separator
+  // Add each service item
+  yPos = 105;
+  let totalAmount = 0;
+
+  serviceItems.forEach((item) => {
+    doc.text(item.description, 25, yPos);
+    doc.text(`£${item.amount}`, 160, yPos);
+    totalAmount += parseFloat(item.amount) || 0;
+    yPos += 10; // Move down 10mm for the next item
+  });
+
+  // Line separator after the description section
+  const descriptionEndY = 90 + serviceItemsHeight + 5;
   doc.setDrawColor(220, 220, 220)
-  doc.line(20, 125, 190, 125)
+  doc.line(20, descriptionEndY, 190, descriptionEndY)
 
   // Subtotal
   doc.setFont("helvetica", "bold")
   doc.setTextColor(92, 107, 115) // Gray-blue color
-  doc.text("SUBTOTAL", 130, 135)
+  doc.text("SUBTOTAL", 130, descriptionEndY + 10)
   doc.setFont("helvetica", "normal")
   doc.setTextColor(0, 0, 0) // Black color for values
-  doc.text(`£${data.amount}`, 160, 135)
+  doc.text(`£${totalAmount.toFixed(2)}`, 160, descriptionEndY + 10)
 
   // Total
   doc.setFont("helvetica", "bold")
   doc.setTextColor(92, 107, 115) // Gray-blue color
-  doc.text("TOTAL", 130, 145)
+  doc.text("TOTAL", 130, descriptionEndY + 20)
   doc.setTextColor(0, 0, 0) // Black color for values
-  doc.text(`£${data.amount}`, 160, 145)
+  doc.text(`£${totalAmount.toFixed(2)}`, 160, descriptionEndY + 20)
 
   // Add payment terms for invoice
   if (isInvoice) {
     doc.setFont("helvetica", "bold")
     doc.setTextColor(92, 107, 115) // Gray-blue color
-    doc.text("PAYMENT TERMS", 20, 160)
+    doc.text("PAYMENT TERMS", 20, descriptionEndY + 35)
     doc.setFont("helvetica", "normal")
     doc.setTextColor(0, 0, 0) // Black color for values
-    doc.text("Payment due within 30 days of invoice date", 20, 165)
+    doc.text("Payment due within 30 days of invoice date", 20, descriptionEndY + 40)
 
     // Payment details
     doc.setFont("helvetica", "bold")
     doc.setTextColor(92, 107, 115) // Gray-blue color
-    doc.text("PAYMENT DETAILS", 20, 175)
+    doc.text("PAYMENT DETAILS", 20, descriptionEndY + 50)
     doc.setFont("helvetica", "normal")
     doc.setTextColor(0, 0, 0) // Black color for values
-    doc.text("Please make payment to:", 20, 180)
-    doc.text("Account Name: KM Joinery", 20, 185)
-    doc.text("Sort Code: 00-00-00", 20, 190)
-    doc.text("Account Number: 00000000", 20, 195)
-    doc.text("Reference: " + data.quoteNumber, 20, 200)
+    doc.text("Please make payment to:", 20, descriptionEndY + 55)
+    doc.text("Account Name: KM Joinery", 20, descriptionEndY + 60)
+    doc.text("Sort Code: 00-00-00", 20, descriptionEndY + 65)
+    doc.text("Account Number: 00000000", 20, descriptionEndY + 70)
+    doc.text("Reference: " + data.quoteNumber, 20, descriptionEndY + 75)
   }
 
   // Footer
