@@ -31,17 +31,24 @@ export async function generatePDF(data: DocumentData): Promise<Blob> {
   // Set font
   doc.setFont("helvetica")
 
-  // Add company name at the top
-  doc.setFontSize(24)
-  doc.setFont("helvetica", "bold")
-  doc.text(data.companyName, 20, 20)
-
   // Add document type heading
   doc.setFontSize(16)
+  doc.setTextColor(92, 107, 115) // Gray-blue color for the heading
+  doc.setFont("helvetica", "bold")
   doc.text(documentTypeUpper, 20, 30)
+
+  // Add KM logo - using PNG format
+  try {
+    // Load the logo image (using a relative path to the public directory)
+    const logoPath = '/logo.png';
+    doc.addImage(logoPath, 'PNG', 150, 10, 40, 40);
+  } catch (error) {
+    console.error("Error adding logo:", error);
+  }
 
   // Create a table for document details
   doc.setFontSize(10)
+  doc.setTextColor(92, 107, 115) // Gray-blue color
   doc.setFont("helvetica", "bold")
 
   // Document number and date headers
@@ -50,17 +57,20 @@ export async function generatePDF(data: DocumentData): Promise<Blob> {
 
   // Document number and date values
   doc.setFont("helvetica", "normal")
+  doc.setTextColor(0, 0, 0) // Black color for values
   doc.text(data.quoteNumber, 20, 45)
   doc.text(data.quoteDate, 70, 45)
 
   // Customer and company info headers
   doc.setFont("helvetica", "bold")
+  doc.setTextColor(92, 107, 115) // Gray-blue color
   doc.text("PREPARED FOR", 20, 55)
   doc.text("PREPARED BY", 70, 55)
   doc.text("CONTACT", 140, 55)
 
   // Customer info
   doc.setFont("helvetica", "normal")
+  doc.setTextColor(0, 0, 0) // Black color for values
   doc.text(data.customerName, 20, 60)
 
   // Customer address
@@ -89,46 +99,66 @@ export async function generatePDF(data: DocumentData): Promise<Blob> {
   doc.setDrawColor(220, 220, 220)
   doc.line(20, 85, 190, 85)
 
+  // Description section with background
+  // First, draw the background rectangle
+  doc.setFillColor(245, 247, 250) // Light gray background color
+  doc.rect(20, 90, 170, 30, 'F') // x, y, width, height, style ('F' = fill)
+
   // Description and amount headers
   doc.setFont("helvetica", "bold")
-  doc.text("DESCRIPTION", 20, 95)
+  doc.setTextColor(92, 107, 115) // Gray-blue color
+  doc.text("DESCRIPTION", 25, 95)
   doc.text("AMOUNT", 160, 95)
+
+  // Line separator within the description box
+  doc.setDrawColor(220, 220, 220)
+  doc.line(20, 100, 190, 100)
 
   // Description and amount values
   doc.setFont("helvetica", "normal")
-  doc.text(data.description, 20, 105)
+  doc.setTextColor(0, 0, 0) // Black color for values
+  doc.text(data.description, 25, 105)
   doc.text(`£${data.amount}`, 160, 105)
 
   // Line separator
-  doc.line(20, 115, 190, 115)
+  doc.setDrawColor(220, 220, 220)
+  doc.line(20, 125, 190, 125)
 
   // Subtotal
   doc.setFont("helvetica", "bold")
-  doc.text("SUBTOTAL", 130, 125)
+  doc.setTextColor(92, 107, 115) // Gray-blue color
+  doc.text("SUBTOTAL", 130, 135)
   doc.setFont("helvetica", "normal")
-  doc.text(`£${data.amount}`, 160, 125)
+  doc.setTextColor(0, 0, 0) // Black color for values
+  doc.text(`£${data.amount}`, 160, 135)
 
   // Total
   doc.setFont("helvetica", "bold")
-  doc.text("TOTAL", 130, 135)
-  doc.text(`£${data.amount}`, 160, 135)
+  doc.setTextColor(92, 107, 115) // Gray-blue color
+  doc.text("TOTAL", 130, 145)
+  doc.setTextColor(0, 0, 0) // Black color for values
+  doc.text(`£${data.amount}`, 160, 145)
 
   // Add payment terms for invoice
   if (isInvoice) {
     doc.setFont("helvetica", "bold")
-    doc.text("PAYMENT TERMS", 20, 150)
+    doc.setTextColor(92, 107, 115) // Gray-blue color
+    doc.text("PAYMENT TERMS", 20, 160)
     doc.setFont("helvetica", "normal")
-    doc.text("Payment due within 30 days of invoice date", 20, 155)
+    doc.setTextColor(0, 0, 0) // Black color for values
+    doc.text("Payment due within 30 days of invoice date", 20, 165)
 
     // Payment details
     doc.setFont("helvetica", "bold")
-    doc.text("PAYMENT DETAILS", 20, 165)
+    doc.setTextColor(92, 107, 115) // Gray-blue color
+    doc.text("PAYMENT DETAILS", 20, 175)
     doc.setFont("helvetica", "normal")
-    doc.text("Please make payment to:", 20, 170)
-    doc.text("Account Name: KM Joinery", 20, 175)
-    doc.text("Sort Code: 00-00-00", 20, 180)
-    doc.text("Account Number: 00000000", 20, 185)
-    doc.text("Reference: " + data.quoteNumber, 20, 190)
+    doc.setTextColor(0, 0, 0) // Black color for values
+    doc.text("Please make payment to:", 20, 180)
+    doc.text("Account Name: KM Joinery", 20, 185)
+    doc.text("Sort Code: 00-00-00", 20, 190)
+    doc.text("Account Number: 00000000", 20, 195)
+    doc.text("Reference: " + data.quoteNumber, 20, 200)
   }
 
   // Footer
@@ -137,6 +167,7 @@ export async function generatePDF(data: DocumentData): Promise<Blob> {
 
   doc.setFontSize(10)
   doc.setFont("helvetica", "bold")
+  doc.setTextColor(92, 107, 115) // Gray-blue color
   doc.text(footerText, 105, 270, { align: "center" })
   doc.setFont("helvetica", "normal")
   doc.text(contactText, 105, 275, { align: "center" })

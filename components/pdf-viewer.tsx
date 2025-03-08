@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Download } from "lucide-react"
+import { Download, Printer } from "lucide-react"
 
 interface PDFViewerProps {
   pdfBlob: Blob
@@ -33,9 +33,22 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
     document.body.removeChild(link)
   }
 
+  const handlePrint = () => {
+    const printWindow = window.open(pdfUrl, '_blank')
+    if (printWindow) {
+      printWindow.addEventListener('load', () => {
+        printWindow.print()
+      })
+    }
+  }
+
   return (
     <div className="flex flex-col h-full">
-      <div className="flex justify-end mb-2">
+      <div className="flex justify-end mb-2 gap-2">
+        <Button onClick={handlePrint} variant="outline" className="flex items-center gap-2">
+          <Printer className="h-4 w-4" />
+          Print
+        </Button>
         <Button onClick={handleDownload} className="flex items-center gap-2">
           <Download className="h-4 w-4" />
           Download PDF
