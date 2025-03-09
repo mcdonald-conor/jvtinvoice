@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { generatePDF } from "@/lib/pdf-generator"
 import { Switch } from "@/components/ui/switch"
+import { ColoredSwitch } from "@/components/ui/colored-switch"
 
 // Function to format UK postcodes
 const formatPostcode = (postcode: string): string => {
@@ -161,22 +162,32 @@ export function QuoteForm() {
               className="space-y-6"
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">{documentTypeLabel} Generator</h2>
+                <span
+                  className={`px-4 py-1.5 text-sm font-medium rounded-full ${
+                    isInvoice
+                      ? "bg-blue-50 text-blue-700"
+                      : "bg-green-50 text-green-700"
+                  }`}
+                >
+                  {isInvoice ? "Invoice Mode" : "Quote Mode"}
+                </span>
                 <FormField
                   control={form.control}
                   name="documentType"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-end space-x-2 space-y-0">
-                      <div className="text-sm font-medium">Quote</div>
+                    <FormItem className="flex flex-row items-center justify-end space-x-3 space-y-0">
+                      <div className={`text-sm font-medium ${field.value === "quote" ? "text-green-600 font-bold" : "text-gray-500"}`}>Quote</div>
                       <FormControl>
-                        <Switch
+                        <ColoredSwitch
                           checked={field.value === "invoice"}
                           onCheckedChange={(checked) => {
                             field.onChange(checked ? "invoice" : "quote");
                           }}
+                          onColor="bg-blue-600"
+                          offColor="bg-green-600"
                         />
                       </FormControl>
-                      <div className="text-sm font-medium">Invoice</div>
+                      <div className={`text-sm font-medium ${field.value === "invoice" ? "text-blue-600 font-bold" : "text-gray-500"}`}>Invoice</div>
                     </FormItem>
                   )}
                 />
