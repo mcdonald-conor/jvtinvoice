@@ -28,12 +28,35 @@ const nextConfig = {
         source: '/:path*',
         headers: [
           {
-            key: 'Content-Type',
-            value: 'text/html; charset=utf-8',
-          },
-          {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/chunks/:path*',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/css/:path*',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'text/css; charset=utf-8',
+          },
+        ],
+      },
+      {
+        source: '/((?!_next/static|api).*)',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'text/html; charset=utf-8',
           },
         ],
       },

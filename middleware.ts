@@ -8,6 +8,9 @@ export function middleware(request: NextRequest) {
   // Get the user agent
   const userAgent = request.headers.get('user-agent') || '';
 
+  // Get the request path
+  const path = request.nextUrl.pathname;
+
   // Create a response
   const response = NextResponse.next({
     request: {
@@ -15,8 +18,15 @@ export function middleware(request: NextRequest) {
     },
   });
 
-  // Add security and content-type headers
-  response.headers.set('Content-Type', 'text/html; charset=utf-8');
+  // Only set Content-Type for HTML pages, not for static assets
+  if (!path.includes('/_next/') &&
+      !path.includes('/api/') &&
+      !path.match(/\.(jpg|jpeg|gif|png|svg|ico|css|js|json)$/i)) {
+    // This is likely an HTML page
+    response.headers.set('Content-Type', 'text/html; charset=utf-8');
+  }
+
+  // Always set security headers
   response.headers.set('X-Content-Type-Options', 'nosniff');
 
   // Add cache control for better performance
@@ -33,8 +43,7 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - .*\\.(?:jpg|jpeg|gif|png|svg|ico|css|js)$ (static files)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:jpg|jpeg|gif|png|svg|ico|css|js)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };
