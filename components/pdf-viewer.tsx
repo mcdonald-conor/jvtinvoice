@@ -19,9 +19,10 @@ import { isBrowser, isMobileDevice, safeNavigator, safeWindow } from "@/lib/brow
 interface PDFViewerProps {
   pdfBlob: Blob
   documentType?: 'quote' | 'invoice'
+  quoteNumber?: string
 }
 
-export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
+export function PDFViewer({ pdfBlob, documentType = 'quote', quoteNumber = '' }: PDFViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string>("")
   const [phoneNumber, setPhoneNumber] = useState<string>("")
   const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = useState(false)
@@ -46,7 +47,13 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
     const link = document.createElement("a")
     link.href = pdfUrl
     const documentTypeCapitalized = documentType.charAt(0).toUpperCase() + documentType.slice(1)
-    link.download = `KM-Joinery-${documentTypeCapitalized}.pdf`
+
+    // Use the quote number for the filename if available, otherwise use a default name
+    const filename = quoteNumber
+      ? `${quoteNumber}.pdf`
+      : `KM-Joinery-${documentTypeCapitalized}.pdf`
+
+    link.download = filename
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -73,8 +80,9 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
       const documentTypeCapitalized = documentType.charAt(0).toUpperCase() + documentType.slice(1)
       const isMobile = isMobileDevice();
 
-      // Different messages for mobile vs desktop
-      const message = `Here's your KM Joinery ${documentTypeCapitalized}.`
+      // Include the quote number in the message if available
+      const messagePrefix = quoteNumber ? `${quoteNumber}: ` : '';
+      const message = `${messagePrefix}Here's your KM Joinery ${documentTypeCapitalized}.`
       const encodedMessage = encodeURIComponent(message)
 
       const window = safeWindow();
@@ -93,10 +101,15 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
       // Try to use the Web Share API for mobile devices
       if (navigator?.share && pdfBlob && isMobile) {
         try {
-          const file = new File([pdfBlob], `KM-Joinery-${documentTypeCapitalized}.pdf`, { type: 'application/pdf' })
+          // Use the quote number for the filename if available
+          const filename = quoteNumber
+            ? `${quoteNumber}.pdf`
+            : `KM-Joinery-${documentTypeCapitalized}.pdf`
+
+          const file = new File([pdfBlob], filename, { type: 'application/pdf' })
           await navigator.share({
-            title: `KM Joinery ${documentTypeCapitalized}`,
-            text: "Here's your document",
+            title: quoteNumber ? `${quoteNumber}` : `KM Joinery ${documentTypeCapitalized}`,
+            text: message,
             files: [file]
           })
           return

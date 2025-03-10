@@ -85,6 +85,7 @@ type ServiceItemType = z.infer<typeof ServiceItem>
 
 export function QuoteForm() {
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null)
+  const [pdfFilename, setPdfFilename] = useState<string>("")
   const [isGenerating, setIsGenerating] = useState(false)
 
   const defaultValues: Partial<FormValues> = {
@@ -128,7 +129,7 @@ export function QuoteForm() {
         data.customerPostcode
       ];
 
-      const blob = await generatePDF({
+      const result = await generatePDF({
         documentType: data.documentType,
         quoteNumber: data.quoteNumber,
         quoteDate: data.quoteDate,
@@ -142,7 +143,8 @@ export function QuoteForm() {
         services: data.services,
       });
 
-      setPdfBlob(blob);
+      setPdfBlob(result.blob);
+      setPdfFilename(result.filename);
     } catch (error) {
       console.error("Error generating PDF:", error);
     } finally {
@@ -472,7 +474,11 @@ export function QuoteForm() {
 
       <div>
         {pdfBlob ? (
-          <PDFViewer pdfBlob={pdfBlob} documentType={form.getValues("documentType")} />
+          <PDFViewer
+            pdfBlob={pdfBlob}
+            documentType={documentType}
+            quoteNumber={pdfFilename.replace('.pdf', '')}
+          />
         ) : (
           <div className="flex items-center justify-center h-full bg-muted rounded-lg p-8">
             <p className="text-muted-foreground text-center">

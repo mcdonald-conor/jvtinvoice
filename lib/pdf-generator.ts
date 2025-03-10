@@ -19,7 +19,7 @@ interface DocumentData {
   services: ServiceItem[]
 }
 
-export async function generatePDF(data: DocumentData): Promise<Blob> {
+export async function generatePDF(data: DocumentData): Promise<{ blob: Blob, filename: string }> {
   // Create a new PDF document
   const doc = new jsPDF({
     orientation: "portrait",
@@ -31,6 +31,9 @@ export async function generatePDF(data: DocumentData): Promise<Blob> {
   const documentTypeUpper = isInvoice ? "INVOICE" : "QUOTE";
   const documentNumberLabel = isInvoice ? "INVOICE NUMBER" : "QUOTE NUMBER";
   const documentDateLabel = isInvoice ? "INVOICE DATE" : "QUOTE DATE";
+
+  // Generate a filename based on the quote number
+  const filename = `${data.quoteNumber}.pdf`;
 
   // Set font
   doc.setFont("helvetica")
@@ -195,15 +198,19 @@ export async function generatePDF(data: DocumentData): Promise<Blob> {
   doc.setFont("helvetica", "normal")
   doc.text(contactText, 105, 275, { align: "center" })
 
-  // Return the PDF as a blob
-  return doc.output("blob")
+  // Return the PDF as a blob along with the filename
+  return {
+    blob: doc.output("blob"),
+    filename
+  }
 }
 
 // For backward compatibility
 export async function generateQuotePDF(data: Omit<DocumentData, 'documentType' | 'services'> & { description: string, amount: string }): Promise<Blob> {
-  return generatePDF({
+  const result = await generatePDF({
     ...data,
     documentType: 'quote',
     services: [{ description: data.description, amount: data.amount }]
   });
+  return result.blob;
 }
