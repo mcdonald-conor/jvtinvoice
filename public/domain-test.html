@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domain Configuration Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    .card {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .warning {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    code {
+      background: #f0f0f0;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    #results {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Domain Configuration Test</h1>
+
+  <div class="card info">
+    <p>This page will help diagnose issues with your custom domain configuration. Click the button below to run tests.</p>
+    <button id="runTests">Run Diagnostic Tests</button>
+  </div>
+
+  <div id="results"></div>
+
+  <script>
+    document.getElementById('runTests').addEventListener('click', runDiagnostics);
+
+    async function runDiagnostics() {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '<div class="card">Running tests...</div>';
+
+      const tests = [
+        testBasicJavaScript,
+        testContentTypeHeaders,
+        testCORSHeaders,
+        testSSLConfiguration,
+        testResourceLoading,
+        testCacheHeaders
+      ];
+
+      const results = [];
+
+      for (const test of tests) {
+        try {
+          const result = await test();
+          results.push(result);
+        } catch (error) {
+          results.push({
+            name: test.name,
+            status: 'error',
+            message: `Test failed with error: ${error.message}`
+          });
+        }
+      }
+
+      displayResults(results);
+    }
+
+    function displayResults(results) {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '';
+
+      const summary = document.createElement('div');
+      summary.className = 'card';
+
+      const passedTests = results.filter(r => r.status === 'success').length;
+      const totalTests = results.length;
+
+      if (passedTests === totalTests) {
+        summary.classList.add('success');
+        summary.innerHTML = `<h2>All Tests Passed! (${passedTests}/${totalTests})</h2>
+          <p>Your domain configuration appears to be working correctly. If you're still experiencing issues, they might be related to specific application code rather than domain configuration.</p>`;
+      } else {
+        summary.classList.add('warning');
+        summary.innerHTML = `<h2>Some Tests Failed (${passedTests}/${totalTests})</h2>
+          <p>There are some issues with your domain configuration that might be causing problems.</p>`;
+      }
+
+      resultsDiv.appendChild(summary);
+
+      results.forEach(result => {
+        const resultCard = document.createElement('div');
+        resultCard.className = `card ${result.status}`;
+
+        resultCard.innerHTML = `
+          <h3>${result.name}</h3>
+          <p>${result.message}</p>
+          ${result.details ? `<div><strong>Details:</strong> <pre>${JSON.stringify(result.details, null, 2)}</pre></div>` : ''}
+        `;
+
+        resultsDiv.appendChild(resultCard);
+      });
+    }
+
+    async function testBasicJavaScript() {
+      // This tests if basic JavaScript execution works
+      try {
+        const testValue = 42;
+        const result = testValue * 2;
+
+        return {
+          name: 'Basic JavaScript Execution',
+          status: 'success',
+          message: 'JavaScript is executing correctly on this page.',
+          details: { testValue, result }
+        };
+      } catch (error) {
+        return {
+          name: 'Basic JavaScript Execution',
+          status: 'error',
+          message: 'JavaScript execution failed.',
+          details: { error: error.message }
+        };
+      }
+    }
+
+    async function testContentTypeHeaders() {
+      try {
+        // Test the Content-Type header of this page
+        const response = await fetch(window.location.href);
+        const contentType = response.headers.get('Content-Type');
+
+        const isCorrect = contentType && (
+          contentType.includes('text/html') ||
+          contentType.includes('application/xhtml+xml')
+        );
+
+        return {
+          name: 'Content-Type Headers',
+          status: isCorrect ? 'success' : 'error',
+          message: isCorrect
+            ? 'Content-Type header is correctly set for HTML.'
+            : 'Content-Type header is not correctly set for HTML.',
+          details: { contentType }
+        };
+      } catch (error) {
+        return {
+          name: 'Content-Type Headers',
+          status: 'error',
+          message: 'Failed to test Content-Type headers.',
+          details: { error: error.message }
+        };
+      }
+    }
+
+    async function testCORSHeaders() {
+      try {
+        // Create a test script element to check if it loads
+        const script = document.createElement('script');
+        script.src = '/_next/static/chunks/test-cors.js';
+        script.id = 'test-cors-script';
+        script.onerror = () => {
+          // This is expected since the file doesn't exist
+          document.body.removeChild(script);
+        };
+
+        document.body.appendChild(script);
+
+        // Check if we can fetch a static asset
+        try {
+          const response = await fetch('/_next/static/chunks/pages/_app.js', { method: 'HEAD' });
+          const corsHeader = response.headers.get('Access-Control-Allow-Origin');
+
+          return {
+            name: 'CORS Configuration',
+            status: 'success',
+            message: 'CORS headers appear to be configured correctly.',
+            details: {
+              corsHeader,
+              status: response.status,
+              ok: response.ok
+            }
+          };
+        } catch (corsError) {
+          return {
+            name: 'CORS Configuration',
+            status: 'warning',
+            message: 'Could not verify CORS configuration.',
+            details: { error: corsError.message }
+          };
+        }
+      } catch (error) {
+        return {
+          name: 'CORS Configuration',
+          status: 'error',
+          message: 'Failed to test CORS headers.',
+          details: { error: error.message }
+        };
+      }
+    }
+
+    async function testSSLConfiguration() {
+      try {
+        const isSecure = window.location.protocol === 'https:';
+
+        return {
+          name: 'SSL Configuration',
+          status: isSecure ? 'success' : 'warning',
+          message: isSecure
+            ? 'Site is served over HTTPS.'
+            : 'Site is not served over HTTPS, which may cause issues with modern browsers.',
+          details: { protocol: window.location.protocol }
+        };
+      } catch (error) {
+        return {
+          name: 'SSL Configuration',
+          status: 'error',
+          message: 'Failed to test SSL configuration.',
+          details: { error: error.message }
+        };
+      }
+    }
+
+    async function testResourceLoading() {
+      try {
+        // Create a test image element to check if it loads
+        const img = new Image();
+        let imageLoaded = false;
+
+        const imagePromise = new Promise((resolve) => {
+          img.onload = () => {
+            imageLoaded = true;
+            resolve();
+          };
+          img.onerror = () => {
+            resolve();
+          };
+
+          // Try to load a known image
+          img.src = '/logo.png';
+        });
+
+        await imagePromise;
+
+        return {
+          name: 'Resource Loading',
+          status: imageLoaded ? 'success' : 'warning',
+          message: imageLoaded
+            ? 'Static resources can be loaded correctly.'
+            : 'There might be issues loading static resources.',
+          details: { imageLoaded }
+        };
+      } catch (error) {
+        return {
+          name: 'Resource Loading',
+          status: 'error',
+          message: 'Failed to test resource loading.',
+          details: { error: error.message }
+        };
+      }
+    }
+
+    async function testCacheHeaders() {
+      try {
+        // Test cache headers on a static asset
+        const response = await fetch('/logo.png', { method: 'HEAD' });
+        const cacheControl = response.headers.get('Cache-Control');
+
+        return {
+          name: 'Cache Headers',
+          status: 'info',
+          message: 'Cache headers information.',
+          details: {
+            cacheControl,
+            etag: response.headers.get('ETag'),
+            lastModified: response.headers.get('Last-Modified')
+          }
+        };
+      } catch (error) {
+        return {
+          name: 'Cache Headers',
+          status: 'error',
+          message: 'Failed to test cache headers.',
+          details: { error: error.message }
+        };
+      }
+    }
+  </script>
+</body>
+</html>

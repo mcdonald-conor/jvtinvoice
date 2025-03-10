@@ -1,30 +1,44 @@
 const { createServer } = require('http');
 const { parse } = require('url');
 const next = require('next');
+const path = require('path');
 
 const dev = process.env.NODE_ENV !== 'production';
-const hostname = 'localhost';
-const port = process.env.PORT || 3000;
-
-// Prepare the Next.js app
-const app = next({ dev, hostname, port });
+const app = next({ dev });
 const handle = app.getRequestHandler();
 
-app.prepare().then(() => {
-  createServer(async (req, res) => {
-    try {
-      // Parse the URL
-      const parsedUrl = parse(req.url, true);
+const PORT = process.env.PORT || 3000;
 
-      // Let Next.js handle the request
-      await handle(req, res, parsedUrl);
-    } catch (err) {
-      console.error('Error occurred handling', req.url, err);
-      res.statusCode = 500;
-      res.end('Internal Server Error');
+// MIME type mapping
+const mimeTypes = {
+  '.js': 'application/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+};
+
+app.prepare().then(() => {
+  createServer((req, res) => {
+    const parsedUrl = parse(req.url, true);
+    const { pathname } = parsedUrl;
+
+    // Set proper MIME types for static files
+    const ext = path.extname(pathname);
+    if (ext && mimeTypes[ext]) {
+      res.setHeader('Content-Type', mimeTypes[ext]);
     }
-  }).listen(port, (err) => {
+
+    // Set security headers
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+
+    // Let Next.js handle the request
+    handle(req, res, parsedUrl);
+  }).listen(PORT, (err) => {
     if (err) throw err;
-    console.log(`> Ready on http://${hostname}:${port}`);
+    console.log(`> Ready on http://localhost:${PORT}`);
   });
 });
