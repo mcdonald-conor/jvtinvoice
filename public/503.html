@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KM Joinery Quote Generator</title>
-  <meta http-equiv="refresh" content="0;url=/" />
+  <title>Service Temporarily Unavailable - KM Joinery</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
@@ -31,31 +30,39 @@
     }
     h1 {
       margin-bottom: 20px;
+      color: #e74c3c;
     }
     p {
-      margin-bottom: 30px;
+      margin-bottom: 20px;
+      line-height: 1.6;
     }
-    .loader {
-      border: 5px solid #f3f3f3;
-      border-top: 5px solid #3498db;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto;
+    .btn {
+      display: inline-block;
+      background-color: #3498db;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-weight: 500;
+      margin-top: 10px;
     }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .btn:hover {
+      background-color: #2980b9;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>KM Joinery Quote Generator</h1>
-    <p>Loading the application...</p>
-    <div class="loader"></div>
-    <p>If you are not redirected automatically, <a href="/">click here</a>.</p>
+    <h1>Service Temporarily Unavailable</h1>
+    <p>We're sorry, but the KM Joinery Quote Generator is temporarily unavailable. Our team is working to resolve the issue as quickly as possible.</p>
+    <p>Please try again in a few moments.</p>
+    <a href="/" class="btn">Refresh Page</a>
   </div>
+  <script>
+    // Auto-refresh after 10 seconds
+    setTimeout(function() {
+      window.location.reload();
+    }, 10000);
+  </script>
 </body>
 </html>

@@ -22,7 +22,7 @@ const nextConfig = {
     parallelServerCompiles: true,
   },
   output: 'standalone',
-  // Add cross-browser compatibility headers
+  // Add security and caching headers
   async headers() {
     return [
       {
@@ -30,15 +30,36 @@ const nextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'no-store, must-revalidate',
+            value: 'public, max-age=3600',
           },
           {
-            key: 'Pragma',
-            value: 'no-cache',
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
           },
           {
-            key: 'Expires',
-            value: '0',
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
