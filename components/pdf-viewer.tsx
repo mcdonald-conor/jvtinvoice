@@ -62,33 +62,36 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
       // Different messages for mobile vs desktop
-      const message = isMobile
-        ? `Here's your KM Joinery ${documentTypeCapitalized}.`
-        : `Here's your KM Joinery ${documentTypeCapitalized}. (Note: PDF will need to be sent separately on desktop)`
-
+      const message = `Here's your KM Joinery ${documentTypeCapitalized}.`
       const encodedMessage = encodeURIComponent(message)
 
       // If we have a phone number, use it
       if (phoneNum) {
         // Format the phone number (remove spaces, +, etc.)
         const formattedPhone = phoneNum.replace(/\D/g, '')
+        // Use wa.me for both mobile and desktop
         window.open(`https://wa.me/${formattedPhone}?text=${encodedMessage}`, '_blank')
         return
       }
 
       // Try to use the Web Share API for mobile devices
       if (navigator.share && pdfBlob && isMobile) {
-        const file = new File([pdfBlob], `KM-Joinery-${documentTypeCapitalized}.pdf`, { type: 'application/pdf' })
-
-        await navigator.share({
-          title: `KM Joinery ${documentTypeCapitalized}`,
-          text: "Here's your document",
-          files: [file]
-        })
-      } else {
-        // Fallback to WhatsApp Web without a specific contact
-        window.open(`https://web.whatsapp.com/send?text=${encodedMessage}`, '_blank')
+        try {
+          const file = new File([pdfBlob], `KM-Joinery-${documentTypeCapitalized}.pdf`, { type: 'application/pdf' })
+          await navigator.share({
+            title: `KM Joinery ${documentTypeCapitalized}`,
+            text: "Here's your document",
+            files: [file]
+          })
+          return
+        } catch (shareError) {
+          console.error("Error using Web Share API:", shareError)
+          // Fall through to the next option
+        }
       }
+
+      // Always use wa.me instead of web.whatsapp.com
+      window.open(`https://wa.me/?text=${encodedMessage}`, '_blank')
     } catch (error) {
       console.error("Error sharing via WhatsApp:", error)
       // Fallback to direct WhatsApp link
@@ -107,10 +110,10 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex justify-end mb-2 gap-2">
+      <div className="flex flex-wrap justify-end mb-2 gap-2">
         <Button onClick={handlePrint} variant="outline" className="flex items-center gap-2">
           <Printer className="h-4 w-4" />
-          Print
+          <span className="hidden sm:inline">Print</span>
         </Button>
 
         <Dialog open={isWhatsAppDialogOpen} onOpenChange={setIsWhatsAppDialogOpen}>
@@ -120,7 +123,8 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
               className="flex items-center gap-2 bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 border-green-200"
             >
               <Share2 className="h-4 w-4" />
-              Share via WhatsApp
+              <span className="hidden sm:inline">Share via WhatsApp</span>
+              <span className="sm:hidden">Share</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
@@ -143,10 +147,12 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     className="flex-1"
+                    type="tel"
+                    inputMode="tel"
                   />
                 </div>
               </div>
-              <DialogFooter className="sm:justify-between">
+              <DialogFooter className="sm:justify-between flex-col sm:flex-row gap-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -171,12 +177,24 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
 
         <Button onClick={handleDownload} className="flex items-center gap-2">
           <Download className="h-4 w-4" />
-          Download PDF
+          <span className="hidden sm:inline">Download PDF</span>
+          <span className="sm:hidden">Download</span>
         </Button>
       </div>
-      <div className="flex-1 bg-white rounded-lg overflow-hidden border">
+      <div className="flex-1 bg-white rounded-lg overflow-hidden border" style={{ minHeight: '60vh', WebkitOverflowScrolling: 'touch' }}>
         {pdfUrl ? (
-          <iframe src={pdfUrl} className="w-full h-full" title="PDF Preview" />
+          <iframe
+            src={pdfUrl}
+            className="w-full h-full"
+            title="PDF Preview"
+            style={{
+              height: '100%',
+              minHeight: '60vh',
+              maxHeight: '70vh',
+              overflowY: 'scroll',
+              WebkitOverflowScrolling: 'touch'
+            }}
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <p className="text-muted-foreground">Loading PDF preview...</p>

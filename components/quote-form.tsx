@@ -14,6 +14,7 @@ import { PDFViewer } from "@/components/pdf-viewer"
 import { generatePDF } from "@/lib/pdf-generator"
 import { Switch } from "@/components/ui/switch"
 import { ColoredSwitch } from "@/components/ui/colored-switch"
+import { X } from "lucide-react"
 
 // Function to format UK postcodes
 const formatPostcode = (postcode: string): string => {
@@ -150,7 +151,7 @@ export function QuoteForm() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
       <Card>
         <CardContent className="pt-6">
           <Form {...form}>
@@ -366,7 +367,7 @@ export function QuoteForm() {
 
               {/* Services Section */}
               <div className="space-y-4">
-                <div className="flex justify-between items-center mb-2">
+                <div className="flex justify-between items-center">
                   <h3 className="text-lg font-medium">Services</h3>
                   <Button
                     type="button"
@@ -384,27 +385,25 @@ export function QuoteForm() {
                   </Button>
                 </div>
 
-                {/* Column Headers */}
-                <div className="grid grid-cols-12 gap-4 px-4 py-2 bg-muted rounded-t-md">
-                  <div className="col-span-8 font-medium text-sm">Description</div>
-                  <div className="col-span-3 font-medium text-sm">Amount (£)</div>
-                  <div className="col-span-1"></div>
-                </div>
+                <div className="bg-muted rounded-md overflow-hidden">
+                  <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-muted rounded-t-md">
+                    <div className="col-span-8 font-medium text-sm">Description</div>
+                    <div className="col-span-3 font-medium text-sm">Amount</div>
+                    <div className="col-span-1"></div>
+                  </div>
 
-                {/* Service Rows */}
-                <div className="space-y-2 border rounded-b-md pb-2">
-                  {form.watch("services")?.map((_, index) => (
-                    <div key={index} className="grid grid-cols-12 gap-4 px-4 py-2 items-start">
+                  {form.watch("services")?.map((field, index) => (
+                    <div key={index} className="grid grid-cols-12 gap-2 px-4 py-2 items-start">
                       <div className="col-span-8">
                         <FormField
                           control={form.control}
                           name={`services.${index}.description`}
                           render={({ field }) => (
-                            <FormItem className="space-y-1">
+                            <FormItem>
                               <FormControl>
                                 <Textarea
                                   placeholder="Service description"
-                                  className="resize-none min-h-[80px]"
+                                  className="resize-none min-h-[60px]"
                                   {...field}
                                 />
                               </FormControl>
@@ -413,71 +412,49 @@ export function QuoteForm() {
                           )}
                         />
                       </div>
-
                       <div className="col-span-3">
                         <FormField
                           control={form.control}
                           name={`services.${index}.amount`}
-                          render={({ field }) => {
-                            const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-                              // Only allow numbers and decimal point
-                              const value = e.target.value.replace(/[^0-9.]/g, '');
-                              field.onChange(value);
-                            };
-
-                            return (
-                              <FormItem className="space-y-1">
-                                <FormControl>
-                                  <Input
-                                    placeholder="0.00"
-                                    type="text"
-                                    inputMode="decimal"
-                                    pattern="[0-9]*\.?[0-9]*"
-                                    value={field.value || ""}
-                                    onChange={handleAmountChange}
-                                    onBlur={field.onBlur}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            );
-                          }}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  placeholder="£0.00"
+                                  {...field}
+                                  onChange={(e) => {
+                                    // Allow only numbers, decimal point, and pound sign
+                                    const value = e.target.value.replace(/[^0-9.£]/g, '');
+                                    field.onChange(value);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
                       </div>
-
                       <div className="col-span-1 flex justify-end">
-                        {index > 0 && (
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => {
-                              const currentServices = form.getValues("services");
-                              form.setValue(
-                                "services",
-                                currentServices.filter((_, i) => i !== index)
-                              );
-                            }}
-                          >
-                            ×
-                          </Button>
-                        )}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => {
+                            const currentServices = form.getValues("services");
+                            form.setValue(
+                              "services",
+                              currentServices.filter((_, i) => i !== index)
+                            );
+                          }}
+                          disabled={form.watch("services")?.length === 1}
+                        >
+                          <X className="h-4 w-4" />
+                          <span className="sr-only">Remove</span>
+                        </Button>
                       </div>
                     </div>
                   ))}
-
-                  {/* Total Row */}
-                  <div className="grid grid-cols-12 gap-4 px-4 pt-4 border-t mt-4">
-                    <div className="col-span-8 text-right font-medium">Total:</div>
-                    <div className="col-span-3 font-medium">
-                      £{form.watch("services")?.reduce((total, service) => {
-                        const amount = parseFloat(service.amount) || 0;
-                        return total + amount;
-                      }, 0).toFixed(2)}
-                    </div>
-                    <div className="col-span-1"></div>
-                  </div>
                 </div>
               </div>
 
