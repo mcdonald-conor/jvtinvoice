@@ -10,10 +10,7 @@ export const metadata: Metadata = {
   title: "KM Joinery Quote Generator",
   description: "Generate professional quotes for KM Joinery",
   generator: 'v0.dev',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-  },
+  viewport: 'width=device-width, initial-scale=1',
   icons: {
     icon: [
       { url: '/logo.png' },
@@ -30,7 +27,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
         <link rel="shortcut icon" href="/logo.png" />
       </head>

@@ -5,9 +5,6 @@ export function middleware(request: NextRequest) {
   // Clone the request headers
   const requestHeaders = new Headers(request.headers);
 
-  // Get the user agent
-  const userAgent = request.headers.get('user-agent') || '';
-
   // Get the request path
   const path = request.nextUrl.pathname;
 
@@ -28,9 +25,6 @@ export function middleware(request: NextRequest) {
 
   // Always set security headers
   response.headers.set('X-Content-Type-Options', 'nosniff');
-
-  // Add cache control for better performance
-  response.headers.set('Cache-Control', 'public, max-age=3600');
 
   return response;
 }

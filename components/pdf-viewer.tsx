@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { isBrowser, isMobileDevice, safeNavigator, safeWindow } from "@/lib/browser-utils"
 
 interface PDFViewerProps {
   pdfBlob: Blob
@@ -27,6 +28,8 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
   const phoneInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
+    if (!isBrowser) return;
+
     // Create a URL for the blob
     const url = URL.createObjectURL(pdfBlob)
     setPdfUrl(url)
@@ -38,6 +41,8 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
   }, [pdfBlob])
 
   const handleDownload = () => {
+    if (!isBrowser) return;
+
     const link = document.createElement("a")
     link.href = pdfUrl
     const documentTypeCapitalized = documentType.charAt(0).toUpperCase() + documentType.slice(1)
@@ -48,6 +53,11 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
   }
 
   const handlePrint = () => {
+    if (!isBrowser) return;
+
+    const window = safeWindow();
+    if (!window) return;
+
     const printWindow = window.open(pdfUrl, '_blank')
     if (printWindow) {
       printWindow.addEventListener('load', () => {
@@ -57,13 +67,18 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
   }
 
   const handleWhatsAppShare = async (phoneNum?: string) => {
+    if (!isBrowser) return;
+
     try {
       const documentTypeCapitalized = documentType.charAt(0).toUpperCase() + documentType.slice(1)
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      const isMobile = isMobileDevice();
 
       // Different messages for mobile vs desktop
       const message = `Here's your KM Joinery ${documentTypeCapitalized}.`
       const encodedMessage = encodeURIComponent(message)
+
+      const window = safeWindow();
+      if (!window) return;
 
       // If we have a phone number, use it
       if (phoneNum) {
@@ -74,15 +89,16 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
         return
       }
 
+      const navigator = safeNavigator();
       // Try to use the Web Share API for mobile devices
-      if (navigator.share && pdfBlob && isMobile) {
+      if (navigator?.share && pdfBlob && isMobile) {
         try {
-        const file = new File([pdfBlob], `KM-Joinery-${documentTypeCapitalized}.pdf`, { type: 'application/pdf' })
-        await navigator.share({
-          title: `KM Joinery ${documentTypeCapitalized}`,
-          text: "Here's your document",
-          files: [file]
-        })
+          const file = new File([pdfBlob], `KM-Joinery-${documentTypeCapitalized}.pdf`, { type: 'application/pdf' })
+          await navigator.share({
+            title: `KM Joinery ${documentTypeCapitalized}`,
+            text: "Here's your document",
+            files: [file]
+          })
           return
         } catch (shareError) {
           console.error("Error using Web Share API:", shareError)
@@ -97,7 +113,10 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
       // Fallback to direct WhatsApp link
       const message = `Here's your KM Joinery ${documentType}.`
       const encodedMessage = encodeURIComponent(message)
-      window.open(`https://wa.me/?text=${encodedMessage}`, '_blank')
+      const window = safeWindow();
+      if (window) {
+        window.open(`https://wa.me/?text=${encodedMessage}`, '_blank')
+      }
     }
   }
 

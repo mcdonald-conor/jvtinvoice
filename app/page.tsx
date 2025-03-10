@@ -1,5 +1,14 @@
-import { QuoteForm } from "@/components/quote-form"
+'use client';
+
 import Image from "next/image"
+import dynamic from "next/dynamic"
+import ErrorBoundary from "@/components/error-boundary"
+
+// Use dynamic import with SSR disabled for components that use browser APIs
+const QuoteFormWithNoSSR = dynamic(
+  () => import('@/components/quote-form').then(mod => mod.QuoteForm),
+  { ssr: false }
+)
 
 export default function Home() {
   return (
@@ -14,7 +23,9 @@ export default function Home() {
         />
       </div>
       <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-900 dark:text-white">KM Joinery Document Generator</h1>
-      <QuoteForm />
+      <ErrorBoundary>
+        <QuoteFormWithNoSSR />
+      </ErrorBoundary>
     </main>
   )
 }
