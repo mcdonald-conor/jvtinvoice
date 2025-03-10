@@ -13,7 +13,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { generatePDF } from "@/lib/pdf-generator"
 import { Switch } from "@/components/ui/switch"
-import { ColoredSwitch } from "@/components/ui/colored-switch"
 import { X } from "lucide-react"
 
 // Function to format UK postcodes
@@ -179,13 +178,11 @@ export function QuoteForm() {
                     <FormItem className="flex flex-row items-center justify-end space-x-3 space-y-0">
                       <div className={`text-sm font-medium ${field.value === "quote" ? "text-green-600 font-bold" : "text-gray-500"}`}>Quote</div>
                       <FormControl>
-                        <ColoredSwitch
+                        <Switch
                           checked={field.value === "invoice"}
-                          onCheckedChange={(checked) => {
+                          onCheckedChange={(checked: boolean) => {
                             field.onChange(checked ? "invoice" : "quote");
                           }}
-                          onColor="bg-blue-600"
-                          offColor="bg-green-600"
                         />
                       </FormControl>
                       <div className={`text-sm font-medium ${field.value === "invoice" ? "text-blue-600 font-bold" : "text-gray-500"}`}>Invoice</div>
