@@ -22,6 +22,28 @@ const nextConfig = {
     parallelServerCompiles: true,
   },
   output: 'standalone',
+  // Add cross-browser compatibility headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, must-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+        ],
+      },
+    ];
+  },
 }
 
 mergeConfig(nextConfig, userConfig)
