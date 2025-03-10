@@ -77,12 +77,12 @@ export function PDFViewer({ pdfBlob, documentType = 'quote' }: PDFViewerProps) {
       // Try to use the Web Share API for mobile devices
       if (navigator.share && pdfBlob && isMobile) {
         try {
-          const file = new File([pdfBlob], `KM-Joinery-${documentTypeCapitalized}.pdf`, { type: 'application/pdf' })
-          await navigator.share({
-            title: `KM Joinery ${documentTypeCapitalized}`,
-            text: "Here's your document",
-            files: [file]
-          })
+        const file = new File([pdfBlob], `KM-Joinery-${documentTypeCapitalized}.pdf`, { type: 'application/pdf' })
+        await navigator.share({
+          title: `KM Joinery ${documentTypeCapitalized}`,
+          text: "Here's your document",
+          files: [file]
+        })
           return
         } catch (shareError) {
           console.error("Error using Web Share API:", shareError)
