@@ -24,6 +24,7 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# Build the application
 RUN npm run build
 
 # Production image, copy all the files and run next
@@ -36,10 +37,11 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Copy public directory
 COPY --from=builder /app/public ./public
 
 # Set the correct permission for prerender cache
-RUN mkdir .next
+RUN mkdir -p .next
 RUN chown nextjs:nodejs .next
 
 # Automatically leverage output traces to reduce image size
@@ -51,6 +53,8 @@ USER nextjs
 EXPOSE 3000
 
 ENV PORT 3000
+# Use 0.0.0.0 to ensure the app is accessible from outside the container
 ENV HOSTNAME "0.0.0.0"
 
+# Use the Next.js server
 CMD ["node", "server.js"]

@@ -1,12 +1,13 @@
 {
-  "name": "my-v0-project",
+  "name": "km-joinery-quote-generator",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "node server.js",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "[ -f server.js ] || next build"
   },
   "dependencies": {
     "@hookform/resolvers": "latest",
@@ -68,5 +69,8 @@
     "@types/react-dom": "^19",
     "postcss": "^8.5.3",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

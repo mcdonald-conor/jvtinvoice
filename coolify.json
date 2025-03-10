@@ -1,0 +1,12 @@
+{
+  "name": "km-joinery-quote-generator",
+  "port": 3000,
+  "buildPack": "nixpacks",
+  "env": {
+    "NODE_ENV": "production",
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  "healthCheckPath": "/api/health",
+  "healthCheckTimeout": 10,
+  "autoDeployOnPush": true
+}
