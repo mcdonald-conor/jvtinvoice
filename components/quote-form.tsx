@@ -135,11 +135,11 @@ export function QuoteForm() {
         quoteDate: data.quoteDate,
         customerName: data.customerName,
         customerAddress,
-        companyName: "KM Joinery",
-        companyAddress: ["24 Lyra Road", "Liverpool", "L22 0NT"],
-        companyContact: "07395128423",
-        companyEmail: "contact@kmjoinery.co.uk",
-        companyWebsite: "kmjoinery.co.uk",
+        companyName: "JVT Plastering",
+        companyAddress: ["7 Fern Hey", "Thornton", "Liverpool", "L23 9UL"],
+        companyContact: "+44 7957 786876",
+        companyEmail: "info@jvtplastering.co.uk",
+        companyWebsite: "jvtplastering.co.uk",
         services: data.services,
       });
 

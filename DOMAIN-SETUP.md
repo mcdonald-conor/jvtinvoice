@@ -25,7 +25,7 @@ Before setting up the domain, let's fix the mobile access issues:
 ## Step 2: Add Custom Domain in Coolify
 
 1. Log in to your Coolify dashboard
-2. Navigate to your KM Joinery Quote Generator application
+2. Navigate to your JVT Plastering Quote Generator application
 3. Go to the "Settings" or "Domains" section
 4. Add `km.railsmiths.com` as a custom domain
 5. Enable HTTPS for this domain (recommended)

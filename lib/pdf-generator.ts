@@ -181,7 +181,7 @@ export async function generatePDF(data: DocumentData): Promise<{ blob: Blob, fil
     doc.setFont("helvetica", "normal")
     doc.setTextColor(0, 0, 0) // Black color for values
     doc.text("Please make payment to:", 20, 90 + totalHeight + 55)
-    doc.text("Account Name: KM Joinery", 20, 90 + totalHeight + 60)
+    doc.text("Account Name: JVT Plastering", 20, 90 + totalHeight + 60)
     doc.text("Sort Code: 00-00-00", 20, 90 + totalHeight + 65)
     doc.text("Account Number: 00000000", 20, 90 + totalHeight + 70)
     doc.text("Reference: " + data.quoteNumber, 20, 90 + totalHeight + 75)

@@ -8,8 +8,8 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "KM Joinery Quote Generator",
-  description: "Generate professional quotes for KM Joinery",
+  title: "JVT Plastering Quote Generator",
+  description: "Generate professional quotes for JVT Plastering",
   generator: 'v0.dev',
   viewport: 'width=device-width, initial-scale=1',
   icons: {

@@ -16,13 +16,13 @@ export default function Home() {
       <div className="flex justify-center mb-4">
         <Image
           src="/logo.png"
-          alt="KM Joinery Logo"
+          alt="JVT Plastering Logo"
           width={80}
           height={80}
           className="rounded-full"
         />
       </div>
-      <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-900 dark:text-white">KM Joinery Document Generator</h1>
+      <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-900 dark:text-white">JVT Plastering Document Generator</h1>
       <ErrorBoundary>
         <QuoteFormWithNoSSR />
       </ErrorBoundary>

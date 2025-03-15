@@ -13,7 +13,7 @@ The console errors you're seeing are related to MIME type issues. When using a c
 
 1. **Log in to your Coolify dashboard**
 
-2. **Navigate to your KM Joinery application**
+2. **Navigate to your JVT Plastering application**
 
 3. **Go to the "Settings" tab**
 

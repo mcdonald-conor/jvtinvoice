@@ -1,6 +1,6 @@
-# Deploying KM Joinery Quote Generator with Coolify
+# Deploying JVT Plastering Quote Generator with Coolify
 
-This guide provides step-by-step instructions for deploying the KM Joinery Quote Generator application using Coolify with Nixpacks as the build pack.
+This guide provides step-by-step instructions for deploying the JVT Plastering Quote Generator application using Coolify with Nixpacks as the build pack.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ This guide provides step-by-step instructions for deploying the KM Joinery Quote
 1. Log in to your Coolify dashboard
 2. Navigate to "Sources" and click "New Source"
 3. Select your Git provider (GitHub, GitLab, etc.)
-4. Authenticate and select the repository containing the KM Joinery Quote Generator
+4. Authenticate and select the repository containing the JVT Plastering Quote Generator
 
 ### 2. Create a New Service
 

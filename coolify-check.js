@@ -1,7 +1,8 @@
 // This is a simple script to help check your Coolify configuration
 // You can run this with Node.js to see if there are any issues
 
-console.log('Checking Coolify configuration for KM Joinery Quote Generator');
+const fs = require('fs');
+console.log('Checking Coolify configuration for JVT Plastering Quote Generator');
 console.log('-----------------------------------------------------------');
 
 // Check environment
