@@ -90,8 +90,8 @@ export function QuoteForm() {
 
   const defaultValues: Partial<FormValues> = {
     documentType: "quote",
-    quoteNumber: `KMJ-${Math.floor(100 + Math.random() * 900)}`,
-    quoteDate: format(new Date(), "dd/MM/yy"),
+    quoteNumber: `JVT-${Math.floor(100 + Math.random() * 900)}`,
+    quoteDate: format(new Date(), "dd/MM/yyyy"),
     customerName: "",
     customerAddress1: "",
     customerAddress2: "",
@@ -204,7 +204,7 @@ export function QuoteForm() {
                     <FormItem>
                       <FormLabel>{documentNumberLabel}</FormLabel>
                       <FormControl>
-                        <Input placeholder="KMJ-123" {...field} />
+                        <Input placeholder="JVT-123" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

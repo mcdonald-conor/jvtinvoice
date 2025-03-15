@@ -44,11 +44,31 @@ export async function generatePDF(data: DocumentData): Promise<{ blob: Blob, fil
   doc.setFont("helvetica", "bold")
   doc.text(documentTypeUpper, 20, 30)
 
-  // Add KM logo - using PNG format
+  // Add logo with original aspect ratio
   try {
-    // Load the logo image (using a relative path to the public directory)
     const logoPath = '/logo.png';
-    doc.addImage(logoPath, 'PNG', 150, 10, 40, 40);
+    // Use dimensions that match the original 494:100 aspect ratio (approximately 5:1)
+    const logoWidth = 75; // mm
+    const logoHeight = 15; // mm - maintains the 5:1 aspect ratio
+    const xPos = 115; // Adjusted position to center the wider logo
+    const yPos = 10; // Slightly higher position
+
+    // Draw a rounded rectangle background (optional, remove if not needed)
+    doc.setFillColor(255, 255, 255); // White background
+    const cornerRadius = 2; // mm
+    const padding = 1; // mm
+    doc.roundedRect(
+      xPos - padding,
+      yPos - padding,
+      logoWidth + (padding * 2),
+      logoHeight + (padding * 2),
+      cornerRadius,
+      cornerRadius,
+      'F'
+    );
+
+    // Add the logo
+    doc.addImage(logoPath, 'PNG', xPos, yPos, logoWidth, logoHeight);
   } catch (error) {
     console.error("Error adding logo:", error);
   }
